@@ -1,4 +1,4 @@
-/* lapack_nif.c */
+/* matrix_lapack_nif.c */
 
 #include <stdlib.h>
 
@@ -16,7 +16,90 @@ extern void dgesdd_(const char *jobz,
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-static ERL_NIF_TERM mmultiply_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+static ERL_NIF_TERM transpose_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+{
+
+   unsigned int ncolA=-1,nrowA=-1;
+   double val;
+
+    ERL_NIF_TERM list, head, tail, sublist, subhead,subtail;
+    list=argv[0];
+
+    enif_get_list_cell(env, list, &head, &tail);
+    if (!enif_get_list_length(env, list, &nrowA))
+        return enif_make_badarg(env);
+    if(!enif_get_list_length(env, head, &ncolA))
+        return enif_make_badarg(env);
+
+    if (nrowA==0)
+        return enif_make_badarg(env);
+
+    double *a = enif_alloc(ncolA*nrowA * sizeof *a);
+    ERL_NIF_TERM *A = enif_alloc(ncolA*nrowA * sizeof *A);
+
+    double *pcoeffa;
+    pcoeffa=&a[0];
+
+    ERL_NIF_TERM *pcoeffA;
+    pcoeffA=&A[0];
+
+    while (enif_get_list_cell(env, list, &head, &tail)) {
+
+        sublist=head;
+        while (enif_get_list_cell(env, sublist, &subhead, &subtail)) {
+            if (!enif_get_double(env, subhead, &val)) 
+				return enif_make_badarg(env);
+
+            *pcoeffa = val;
+            pcoeffa++;
+
+            *pcoeffA =enif_make_double(env,val);
+            pcoeffA++;
+
+            sublist = subtail;
+        }
+        list = tail;
+    }
+    *pcoeffa = '\0';
+    *pcoeffA = '\0';
+
+	ERL_NIF_TERM ncolA_nif = enif_make_int(env, ncolA);
+	ERL_NIF_TERM nrowA_nif = enif_make_int(env, nrowA);
+
+	return enif_make_tuple3(env,enif_make_tuple2(env,enif_make_atom(env,"ncolA"),ncolA_nif),enif_make_tuple2(env,enif_make_atom(env,"nrowA"),nrowA_nif),enif_make_list_from_array(env, A, ncolA*nrowA));
+
+/*
+    list=argv[1];
+
+    int i,j;
+
+    int nrowC=nrowA,ncolC=ncolB;
+    double *c = enif_alloc(ncolB*nrowA * sizeof *c);
+    for (i=0; i<nrowC; i++) {
+    	for (j=0; j<ncolC; j++) {
+		 	c[(i*ncolA)+j]=0;
+		}
+ 	}
+
+    ERL_NIF_TERM *C = enif_alloc(ncolB*nrowA * sizeof *C);
+	ERL_NIF_TERM c_nif = enif_make_list(env, 0);
+
+    for (i=nrowC-1; i>=0; i--) {
+    	for (j=0; j<ncolC; j++) {
+		 	C[j]=enif_make_double(env,c[(i*ncolC)+j]);
+		}
+		c_nif=enif_make_list_cell(env,enif_make_list_from_array(env, C, ncolC),c_nif);
+ 	}
+*/
+
+    // and then clean them up too:
+//    enif_free(a);
+//    enif_free(A);
+
+//	return c_nif;
+}
+
+static ERL_NIF_TERM multiply_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
 
    unsigned int ncolA=-1,nrowA=-1,ncolB=-1,nrowB=-1;
@@ -283,8 +366,9 @@ static ERL_NIF_TERM svd_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 }
 
 static ErlNifFunc nif_funcs[] = {
-    {"mmultiply", 2, mmultiply_nif},
+    {"transpose", 1, transpose_nif},
+    {"multiply", 2, multiply_nif},
     {"svd", 1, svd_nif}
 };
 
-ERL_NIF_INIT(lapack, nif_funcs, NULL, NULL, NULL, NULL)
+ERL_NIF_INIT(matrix_lapack, nif_funcs, NULL, NULL, NULL, NULL)
