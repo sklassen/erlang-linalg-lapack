@@ -1,4 +1,4 @@
-/* matrix_lapack_nif.c */
+/* linalg_lapack_nif.c */
 
 #include <stdlib.h>
 
@@ -63,10 +63,7 @@ static ERL_NIF_TERM transpose_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM a
     *pcoeffa = '\0';
     *pcoeffA = '\0';
 
-	ERL_NIF_TERM ncolA_nif = enif_make_int(env, ncolA);
-	ERL_NIF_TERM nrowA_nif = enif_make_int(env, nrowA);
-
-	return enif_make_tuple3(env,enif_make_tuple2(env,enif_make_atom(env,"ncolA"),ncolA_nif),enif_make_tuple2(env,enif_make_atom(env,"nrowA"),nrowA_nif),enif_make_list_from_array(env, A, ncolA*nrowA));
+	return enif_make_list_from_array(env, A, ncolA*nrowA);
 
 /*
     list=argv[1];
@@ -99,7 +96,7 @@ static ERL_NIF_TERM transpose_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM a
 //	return c_nif;
 }
 
-static ERL_NIF_TERM multiply_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
+static ERL_NIF_TERM matmul_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 {
 
    unsigned int ncolA=-1,nrowA=-1,ncolB=-1,nrowB=-1;
@@ -230,11 +227,7 @@ static ERL_NIF_TERM multiply_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM ar
     enif_free(B);
     enif_free(C);
 
-//ERL_NIF_TERM ncolC_nif = enif_make_int(env, ncolC);
-//ERL_NIF_TERM nrowC_nif = enif_make_int(env, nrowC);
-
-//return enif_make_tuple3(env,enif_make_tuple2(env,enif_make_atom(env,"ncolC"),ncolC_nif),enif_make_tuple2(env,enif_make_atom(env,"nrowC"),nrowC_nif),c_nif);
-return c_nif;
+	return c_nif;
 
 
 }
@@ -367,8 +360,8 @@ static ERL_NIF_TERM svd_nif(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[])
 
 static ErlNifFunc nif_funcs[] = {
     {"transpose", 1, transpose_nif},
-    {"multiply", 2, multiply_nif},
+    {"matmul", 2, matmul_nif},
     {"svd", 1, svd_nif}
 };
 
-ERL_NIF_INIT(matrix_lapack, nif_funcs, NULL, NULL, NULL, NULL)
+ERL_NIF_INIT(linalg_lapack, nif_funcs, NULL, NULL, NULL, NULL)

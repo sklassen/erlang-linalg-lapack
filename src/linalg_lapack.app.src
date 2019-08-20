@@ -1,4 +1,4 @@
-{application, matrix_lapack,
+{application, linalg_lapack,
  [
   {description, ""},
   {vsn, "1"},
@@ -7,7 +7,7 @@
                   kernel,
                   stdlib
                  ]},
-  {mod, { matrix_lapack, []}},
+  {mod, { linalg_lapack, []}},
   {env, []}
  ]}.
 
