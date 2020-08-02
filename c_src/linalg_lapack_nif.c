@@ -28,8 +28,6 @@ static ERL_NIF_TERM eye_nif(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
     if (!enif_get_int(env, argv[0], &N))
         return enif_make_badarg(env);
 
-    fprintf(stderr, "eye size %d %d\n", N, N);
-
     ERL_NIF_TERM Col, Rows, Cell;
 
     Rows = enif_make_list(env, 0);
@@ -101,8 +99,6 @@ static ERL_NIF_TERM dot_nif(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 static ERL_NIF_TERM transpose_nif(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
 
-    fprintf(stderr, "transpose\n");
-
     unsigned int ncolA = -1, nrowA = -1;
     int i, j;
 
@@ -117,13 +113,10 @@ static ERL_NIF_TERM transpose_nif(ErlNifEnv *env, int argc, const ERL_NIF_TERM a
     if (!enif_get_list_length(env, head, &ncolA))
         return argv[0];
 
-    fprintf(stderr, "size %d %d\n", nrowA, ncolA);
-
     ERL_NIF_TERM *Rows = enif_alloc(ncolA * sizeof cell);
 
     for (i = 0; i < ncolA; i++)
     {
-        fprintf(stderr, "initialize %d\n", i);
         Rows[i] = enif_make_list(env, 0);
     }
     i = 0;
@@ -134,7 +127,6 @@ static ERL_NIF_TERM transpose_nif(ErlNifEnv *env, int argc, const ERL_NIF_TERM a
         sublist = head;
         while (enif_get_list_cell(env, sublist, &cell, &subtail))
         {
-            fprintf(stderr, "set %d,%d\n", i, j);
             Rows[j] = enif_make_list_cell(env, cell, Rows[j]);
             sublist = subtail;
             j++;
@@ -144,15 +136,11 @@ static ERL_NIF_TERM transpose_nif(ErlNifEnv *env, int argc, const ERL_NIF_TERM a
     }
     for (i = 0; i < ncolA; i++)
     {
-        fprintf(stderr, "reverse %d\n", i);
         if (!enif_make_reverse_list(env, Rows[i], &Rows[i]))
             return enif_make_badarg(env);
     }
-    fprintf(stderr, "build matrix\n");
     ERL_NIF_TERM Matrix = enif_make_list_from_array(env, Rows, ncolA);
-    fprintf(stderr, "free rows\n");
     enif_free(Rows);
-    fprintf(stderr, "return\n");
 
     return Matrix;
 
@@ -161,7 +149,6 @@ static ERL_NIF_TERM transpose_nif(ErlNifEnv *env, int argc, const ERL_NIF_TERM a
 static ERL_NIF_TERM inv_nif(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
 {
 
-    fprintf(stderr, "inverse\n");
 
     unsigned int ncolA = -1, nrowA = -1;
     double fval;
@@ -216,7 +203,6 @@ static ERL_NIF_TERM inv_nif(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
     enif_free(IPIV);
     enif_free(WORK);
 
-    fprintf(stderr, "build matrix\n");
     ERL_NIF_TERM Rows,Col,Cell;
     Rows = enif_make_list(env, 0);
     for (int i = (N-1); i >= 0; i--)
@@ -231,9 +217,7 @@ static ERL_NIF_TERM inv_nif(ErlNifEnv *env, int argc, const ERL_NIF_TERM argv[])
         Rows = enif_make_list_cell(env, Col, Rows);
     }
 
-    fprintf(stderr, "free rows\n");
     enif_free(A);
-    fprintf(stderr, "return\n");
 
     return Rows;
 }
